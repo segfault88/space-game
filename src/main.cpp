@@ -90,6 +90,9 @@ void renderFrame() {
 
 void runMainLoop(SDL_Window* window) {
     checkGlError();
+    checkGlError();
+    checkGlError();
+    std::cout << "Load GFX" << std::endl;
     loadGfx();
     checkGlError();
 
@@ -131,6 +134,9 @@ int main()
 
     glewExperimental = GL_TRUE;
     glewInit();
+
+    checkGlError();
+    std::cout << "Run Main Loop" << std::endl;
 
     runMainLoop(window);
 
