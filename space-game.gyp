@@ -28,6 +28,9 @@
           ]
         }],
         ['OS=="mac"', {
+          'cflags': [
+            '-std=c++11'
+          ],
           'include_dirs': [
             '/usr/local/Cellar/sdl2/2.0.3/include/SDL2/',
             '/usr/local/Cellar/glew/1.10.0/include/',
