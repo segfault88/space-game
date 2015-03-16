@@ -8,6 +8,8 @@ I am bad at naming things, this will do for now. Why are you looking at this? Fo
 
 Switched to GYP from CMake since I find it a real pain to work with. But maybe it's just me...
 
+I am only working on OSX atm.
+
 ```
 # install gyp
 gyp --depth=.
