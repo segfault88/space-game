@@ -9,7 +9,6 @@
 
 #include "glm/glm.hpp"
 
-
 const float vertices[] = {
      0.0f,  0.5f, // Vertex 1 (X, Y)
      0.5f, -0.5f, // Vertex 2 (X, Y)
@@ -21,6 +20,7 @@ void checkGlError(const char* file, GLuint line) {
     if (error != GL_NO_ERROR) {
         std::cout << "GL error! " << file << ":" << line << " - " << error << std::endl;
     }
+
 }
 
 void checkGlError(const char* file, const uint32_t line, const uint32_t frame) {
@@ -41,6 +41,7 @@ GLuint loadShader(const std::string& filename, const GLuint type) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &shaderSourcePtr, 0);
     glCompileShader(shader);
+    
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if (status != GL_TRUE) {
         std::cout << "Shader Compile Failed! Shader:" << filename << std::endl;
@@ -49,6 +50,8 @@ GLuint loadShader(const std::string& filename, const GLuint type) {
         std::cout << buffer << std::endl;
         exit(1);
     }
+    
+    return shader;
 }
 
 void loadGfx() {
@@ -56,19 +59,19 @@ void loadGfx() {
     
     GLuint vbo;
     glGenBuffers(1, &vbo);
-
-    checkGlError(__FILE__, __LINE__);
-    
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    GLint status;
+    
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    
+    checkGlError(__FILE__, __LINE__);
     
     // TODO: figure out paths :(
-    checkGlError(__FILE__, __LINE__);
     GLuint vertexShader = loadShader("/Users/malcolm/Projects/space-game/shaders/vertex.glsl", GL_VERTEX_SHADER);
-    checkGlError(__FILE__, __LINE__);
     GLuint fragmentShader = loadShader("/Users/malcolm/Projects/space-game/shaders/fragment.glsl", GL_FRAGMENT_SHADER);
+    
     checkGlError(__FILE__, __LINE__);
     
     GLuint shaderProgram = glCreateProgram();
@@ -79,14 +82,14 @@ void loadGfx() {
 
     glLinkProgram(shaderProgram);
     glUseProgram(shaderProgram);
+    
+    checkGlError(__FILE__, __LINE__);
 
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(posAttrib);
 
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    checkGlError(__FILE__, __LINE__);
 }
 
 void cleanUpGfx() {
@@ -94,6 +97,7 @@ void cleanUpGfx() {
 }
 
 void renderFrame() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
@@ -110,7 +114,7 @@ void runMainLoop(SDL_Window* window) {
         {
             if (windowEvent.type == SDL_QUIT) break;
             if (windowEvent.type == SDL_KEYUP &&
-                windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
+                (windowEvent.key.keysym.sym == SDLK_ESCAPE || windowEvent.key.keysym.sym == SDLK_q)) break;
         }
 
         renderFrame();
@@ -132,14 +136,17 @@ int main()
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
     SDL_Window* window = SDL_CreateWindow("space-game", 100, 100, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext context = SDL_GL_CreateContext(window);
 
     glewExperimental = GL_TRUE;
     glewInit();
+    
+    glClearColor(0.2f, 0.2f, 0.2f, 0.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     checkGlError(__FILE__, __LINE__);
     std::cout << "Run Main Loop" << std::endl;
