@@ -15,6 +15,8 @@ const float vertices[] = {
     -0.5f, -0.5f  // Vertex 3 (X, Y)
 };
 
+GLint uniColor = 0;
+
 void checkGlError(const char* file, GLuint line) {
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
@@ -90,6 +92,9 @@ void loadGfx() {
     glEnableVertexAttribArray(posAttrib);
 
     checkGlError(__FILE__, __LINE__);
+    
+    uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
+    glUniform3f(uniColor, 0.9f, 0.2f, 0.2f);
 }
 
 void cleanUpGfx() {
@@ -98,6 +103,10 @@ void cleanUpGfx() {
 
 void renderFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glUniform3f(uniColor, (sin(SDL_GetTicks() / 100.f) + 1.0f) / 2.0f, 0.f, 0.f);
+    
+    
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
@@ -105,6 +114,7 @@ void runMainLoop(SDL_Window* window) {
     loadGfx();
 
     uint32_t frame = 0;
+    
     SDL_Event windowEvent;
     while (true)
     {
