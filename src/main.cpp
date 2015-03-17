@@ -16,6 +16,7 @@ const float vertices[] = {
 };
 
 GLint uniColor = 0;
+GLuint vertexShader = 0, fragmentShader = 0, shaderProgram = 0;
 
 void checkGlError(const char* file, GLuint line) {
     GLenum error = glGetError();
@@ -71,12 +72,12 @@ void loadGfx() {
     checkGlError(__FILE__, __LINE__);
     
     // TODO: figure out paths :(
-    GLuint vertexShader = loadShader("/Users/malcolm/Projects/space-game/shaders/vertex.glsl", GL_VERTEX_SHADER);
-    GLuint fragmentShader = loadShader("/Users/malcolm/Projects/space-game/shaders/fragment.glsl", GL_FRAGMENT_SHADER);
+    vertexShader = loadShader("/Users/malcolm/Projects/space-game/shaders/vertex.glsl", GL_VERTEX_SHADER);
+    fragmentShader = loadShader("/Users/malcolm/Projects/space-game/shaders/fragment.glsl", GL_FRAGMENT_SHADER);
     
     checkGlError(__FILE__, __LINE__);
     
-    GLuint shaderProgram = glCreateProgram();
+    shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
 
@@ -98,7 +99,12 @@ void loadGfx() {
 }
 
 void cleanUpGfx() {
-
+    glDetachShader(shaderProgram, fragmentShader);
+    fragmentShader = 0;
+    glDetachShader(shaderProgram, vertexShader);
+    vertexShader = 0;
+    glDeleteShader(shaderProgram);
+    shaderProgram = 0;
 }
 
 void renderFrame() {
