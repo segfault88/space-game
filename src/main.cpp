@@ -10,12 +10,11 @@
 #include "glm/glm.hpp"
 
 const float vertices[] = {
-     0.0f,  0.5f, // Vertex 1 (X, Y)
-     0.5f, -0.5f, // Vertex 2 (X, Y)
-    -0.5f, -0.5f  // Vertex 3 (X, Y)
+    0.0f,  0.5f, 1.0f, 0.0f, 0.0f,  // Vertex 1: Red
+    0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // Vertex 2: Green
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
 };
 
-GLint uniColor = 0;
 GLuint vertexShader = 0, fragmentShader = 0, shaderProgram = 0;
 
 void checkGlError(const char* file, GLuint line) {
@@ -87,15 +86,19 @@ void loadGfx() {
     glUseProgram(shaderProgram);
     
     checkGlError(__FILE__, __LINE__);
-
+    
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(posAttrib);
-
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
+                          5*sizeof(float), 0);
     checkGlError(__FILE__, __LINE__);
     
-    uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
-    glUniform3f(uniColor, 0.9f, 0.2f, 0.2f);
+    GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+    glEnableVertexAttribArray(colAttrib);
+    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
+                          5*sizeof(float), (void*)(2*sizeof(float)));
+    
+    checkGlError(__FILE__, __LINE__);
 }
 
 void cleanUpGfx() {
@@ -109,8 +112,6 @@ void cleanUpGfx() {
 
 void renderFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    glUniform3f(uniColor, (sin(SDL_GetTicks() / 100.f) + 1.0f) / 2.0f, 0.f, 0.f);
     
     
     glDrawArrays(GL_TRIANGLES, 0, 3);
