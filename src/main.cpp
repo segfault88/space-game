@@ -8,12 +8,14 @@
 #include "SDL_opengl.h"
 
 #include "glm/glm.hpp"
+#include <FreeImage.h>
 
 const float vertices[] = {
-    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-    0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-    -0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
+    //  Position      Color             Texcoords
+    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // Top-left
+    0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // Top-right
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // Bottom-right
+    -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f  // Bottom-left
 };
 
 const GLuint elements[] = {
@@ -22,7 +24,7 @@ const GLuint elements[] = {
 };
 
 GLuint vertexShader = 0, fragmentShader = 0, shaderProgram = 0;
-GLuint vao = 0, vbo = 0, ebo = 0;
+GLuint vao = 0, vbo = 0, ebo = 0, texture = 0;
 
 void checkGlError(const char* file, GLuint line) {
     GLenum error = glGetError();
@@ -37,6 +39,28 @@ void checkGlError(const char* file, const uint32_t line, const uint32_t frame) {
     if (error != GL_NO_ERROR) {
         std::cout << "GL error! Frame: " << frame << " " << file << ":" << line << " - " << error << std::endl;
     }
+}
+
+GLuint loadTexture(const std::string& filename) {
+    FIBITMAP *pImage = FreeImage_Load(FreeImage_GetFileType(filename.c_str(), 0), filename.c_str());
+    
+    GLuint t;
+    glGenTextures(1, &t);
+    
+    glBindTexture(GL_TEXTURE_2D, t);
+    
+    uint32_t width = FreeImage_GetWidth(pImage);
+    uint32_t height = FreeImage_GetHeight(pImage);
+    uint32_t bpp = FreeImage_GetBPP(pImage);
+    
+    std::cout << "loading texture: " << filename << ", width: " << width << ", height: " << height << ", bpp: " << bpp << std::endl;
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height,
+                 0, GL_BGR, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
+    
+    FreeImage_Unload(pImage);
+    
+    return t;
 }
 
 GLuint loadShader(const std::string& filename, const GLuint type) {
@@ -98,16 +122,30 @@ void loadGfx() {
     
     checkGlError(__FILE__, __LINE__);
     
+    // Specify the layout of the vertex data
+    
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
-                          5*sizeof(float), 0);
-    checkGlError(__FILE__, __LINE__);
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), 0);
     
     GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
     glEnableVertexAttribArray(colAttrib);
-    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
-                          5*sizeof(float), (void*)(2*sizeof(float)));
+    glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(2 * sizeof(GLfloat)));
+    
+    GLint texAttrib = glGetAttribLocation(shaderProgram, "texcoord");
+    glEnableVertexAttribArray(texAttrib);
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
+    
+    checkGlError(__FILE__, __LINE__);
+    
+    texture = loadTexture("/Users/malcolm/Projects/space-game/images/kitty.jpg");
+    
+    checkGlError(__FILE__, __LINE__);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     checkGlError(__FILE__, __LINE__);
 }
@@ -119,6 +157,9 @@ void cleanUpGfx() {
     vertexShader = 0;
     glDeleteShader(shaderProgram);
     shaderProgram = 0;
+    
+    glDeleteTextures(1, &texture);
+    texture = 0;
     
     glDeleteBuffers(1, &ebo);
     ebo = 0;
@@ -132,8 +173,6 @@ void cleanUpGfx() {
 void renderFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    
-//    glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
