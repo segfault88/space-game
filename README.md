@@ -20,3 +20,9 @@ gyp --depth=.
 ## Using
 
 SDL2, GLEW, GLM.
+
+## Screenshot
+
+This is what it currently looks like:
+
+![Screenshot](https://raw.githubusercontent.com/segfault88/space-game/master/doc/screenshot1.png)
