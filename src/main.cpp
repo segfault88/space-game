@@ -78,7 +78,7 @@ void loadGfx() {
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
-        
+    
     checkGlError(__FILE__, __LINE__);
     
     // TODO: figure out paths :(
@@ -119,6 +119,14 @@ void cleanUpGfx() {
     vertexShader = 0;
     glDeleteShader(shaderProgram);
     shaderProgram = 0;
+    
+    glDeleteBuffers(1, &ebo);
+    ebo = 0;
+    glDeleteBuffers(1, &vbo);
+    vao = 0;
+    
+    glDeleteVertexArrays(1, &vao);
+    vao = 0;
 }
 
 void renderFrame() {
