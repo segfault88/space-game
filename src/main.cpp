@@ -10,12 +10,19 @@
 #include "glm/glm.hpp"
 
 const float vertices[] = {
-    0.0f,  0.5f, 1.0f, 0.0f, 0.0f,  // Vertex 1: Red
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // Vertex 2: Green
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
+    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+    0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+    -0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
+};
+
+const GLuint elements[] = {
+    0, 1, 2,
+    2, 3, 0
 };
 
 GLuint vertexShader = 0, fragmentShader = 0, shaderProgram = 0;
+GLuint vao = 0, vbo = 0, ebo = 0;
 
 void checkGlError(const char* file, GLuint line) {
     GLenum error = glGetError();
@@ -59,15 +66,19 @@ GLuint loadShader(const std::string& filename, const GLuint type) {
 void loadGfx() {
     std::cout << "Load GFX" << std::endl;
     
-    GLuint vbo;
+    checkGlError(__FILE__, __LINE__);
+    
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    
+
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+        
     checkGlError(__FILE__, __LINE__);
     
     // TODO: figure out paths :(
@@ -114,7 +125,8 @@ void renderFrame() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+//    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void runMainLoop(SDL_Window* window) {
