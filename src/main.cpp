@@ -7,8 +7,12 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-#include <glm/glm.hpp>
 #include <FreeImage.h>
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 const float vertices[] = {
     //  Position      Color             Texcoords
@@ -25,6 +29,7 @@ const GLuint elements[] = {
 
 GLuint vertexShader = 0, fragmentShader = 0, shaderProgram = 0;
 GLuint vao = 0, vbo = 0, ebo = 0, texture = 0;
+GLint uniTrans = 0;
 
 void checkGlError(const char* file, GLuint line) {
     GLenum error = glGetError();
@@ -90,6 +95,8 @@ GLuint loadShader(const std::string& filename, const GLuint type) {
 void loadGfx() {
     std::cout << "Load GFX" << std::endl;
     
+
+    
     checkGlError(__FILE__, __LINE__);
     
     glGenVertexArrays(1, &vao);
@@ -124,6 +131,8 @@ void loadGfx() {
     
     // Specify the layout of the vertex data
     
+    uniTrans = glGetUniformLocation(shaderProgram, "model");
+    
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), 0);
@@ -135,6 +144,17 @@ void loadGfx() {
     GLint texAttrib = glGetAttribLocation(shaderProgram, "texcoord");
     glEnableVertexAttribArray(texAttrib);
     glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (void*)(5 * sizeof(GLfloat)));
+    
+    
+    glm::mat4 view = glm::lookAt(glm::vec3(1.2f, 1.2f, 1.2f),
+                                 glm::vec3(0.0f, 0.0f, 0.0f),
+                                 glm::vec3(0.0f, 0.0f, 1.0f));
+    GLint uniView = glGetUniformLocation(shaderProgram, "view");
+    glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 10.0f);
+    GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
+    glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
     
     checkGlError(__FILE__, __LINE__);
     
@@ -170,8 +190,13 @@ void cleanUpGfx() {
     vao = 0;
 }
 
-void renderFrame() {
+void renderFrame(const float rotation) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glm::mat4 trans;
+    trans = glm::rotate(trans, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+    trans = glm::rotate(trans, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
     
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
@@ -180,6 +205,7 @@ void runMainLoop(SDL_Window* window) {
     loadGfx();
 
     uint32_t frame = 0;
+    float rotation = 0.f;
     
     SDL_Event windowEvent;
     while (true)
@@ -193,7 +219,8 @@ void runMainLoop(SDL_Window* window) {
                 (windowEvent.key.keysym.sym == SDLK_ESCAPE || windowEvent.key.keysym.sym == SDLK_q)) break;
         }
 
-        renderFrame();
+        rotation += 2.5f;
+        renderFrame(rotation);
         SDL_GL_SwapWindow(window);
         ++frame;
     }
