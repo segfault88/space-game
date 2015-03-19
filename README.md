@@ -25,4 +25,4 @@ SDL2, GLEW, GLM, FreeImage.
 
 This is what it currently looks like:
 
-![Screenshot](https://raw.githubusercontent.com/segfault88/space-game/master/doc/screenshot1.png)
+![Screenshot](https://raw.githubusercontent.com/segfault88/space-game/master/doc/screenshot2.png)
