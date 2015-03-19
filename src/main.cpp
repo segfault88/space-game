@@ -58,6 +58,7 @@ const GLfloat vertices[] = {
     -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f
 };
 
+uint32_t screenX = 800, screenY = 600;
 GLuint vertexShader = 0, fragmentShader = 0, shaderProgram = 0;
 GLuint vao = 0, vbo = 0, texture = 0;
 GLint uniTrans = 0;
@@ -179,13 +180,11 @@ void loadGfx() {
     GLint uniView = glGetUniformLocation(shaderProgram, "view");
     glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 10.0f);
-    GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
-    glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+    // see proj in renderFrame
     
     checkGlError(__FILE__, __LINE__);
     
-    texture = loadTexture("/Users/malcolm/Projects/space-game/images/kitty.jpg");
+    texture = loadTexture("/Users/malcolm/Projects/space-game/assets/kitty.jpg");
     
     checkGlError(__FILE__, __LINE__);
     
@@ -218,9 +217,13 @@ void cleanUpGfx() {
 void renderFrame(const float rotation) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)screenX / (float)screenY, 1.0f, 10.0f);
+    GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
+    glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+    
     glm::mat4 trans;
     trans = glm::rotate(trans, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    trans = glm::rotate(trans, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+    trans = glm::rotate(trans, glm::radians(rotation * 2.f), glm::vec3(0.0f, 1.0f, 0.0f));
     glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
     
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -239,11 +242,33 @@ void runMainLoop(SDL_Window* window) {
         
         if (SDL_PollEvent(&windowEvent))
         {
+            if (windowEvent.type == SDL_WINDOWEVENT && windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
+                screenX = windowEvent.window.data1;
+                screenY = windowEvent.window.data2;
+            }
             if (windowEvent.type == SDL_QUIT) break;
             if (windowEvent.type == SDL_KEYUP &&
                 (windowEvent.key.keysym.sym == SDLK_ESCAPE || windowEvent.key.keysym.sym == SDLK_q)) break;
+            
+            if (windowEvent.type == SDL_KEYDOWN) {
+                switch (windowEvent.key.keysym.sym) {
+                    case SDLK_UP:
+                        std::cout << "Up!" << std::endl;
+                        break;
+                    case SDLK_LEFT:
+                        std::cout << "Left!" << std::endl;
+                        break;
+                    case SDLK_RIGHT:
+                        std::cout << "Right!" << std::endl;
+                        break;
+                    case SDLK_DOWN:
+                        std::cout << "Down!" << std::endl;
+                        break;
+                }
+            }
         }
 
+        
         rotation += 1.25f;
         renderFrame(rotation);
         SDL_GL_SwapWindow(window);
@@ -267,7 +292,7 @@ int main()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-    SDL_Window* window = SDL_CreateWindow("space-game", 100, 100, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    SDL_Window* window = SDL_CreateWindow("space-game", 100, 100, screenX, screenY, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext context = SDL_GL_CreateContext(window);
 
     glewExperimental = GL_TRUE;
