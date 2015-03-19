@@ -2,12 +2,12 @@
 #include <fstream>
 
 #define GLEW_STATIC
-#include "GL/glew.h"
+#include <GL/glew.h>
 
-#include "SDL.h"
-#include "SDL_opengl.h"
+#include <SDL.h>
+#include <SDL_opengl.h>
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 #include <FreeImage.h>
 
 const float vertices[] = {

@@ -19,7 +19,7 @@ gyp --depth=.
 
 ## Using
 
-SDL2, GLEW, GLM.
+SDL2, GLEW, GLM, FreeImage.
 
 ## Screenshot
 
